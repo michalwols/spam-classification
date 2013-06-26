@@ -22,9 +22,6 @@ classdef fishers_linear_discriminant
             C2_diff = bsxfun(@minus, C2_features, obj.C2_mean');
             obj.Sw = C1_diff' * C1_diff + C2_diff' * C2_diff;
             obj.weights = (obj.Sw)\(obj.C2_mean - obj.C1_mean);
-            
-            % normalize the weights to unit length
-            obj.weights = obj.weights / norm( obj.weights );
         end
         
         function labels = classify(self, features)
