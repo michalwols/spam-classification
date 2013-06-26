@@ -5,26 +5,32 @@ classdef fishers_linear_discriminant
         weights
         C1_mean
         C2_mean
-        between_class_covariance
-        within_class_covariance
-        threshold
+        total_mean
+        Sw
     end
     
     methods
         function obj = fishers_linear_discriminant( features, labels )
-            C1_features = 
-        end
-        
-        function predictions = evaluate(self, features)
-            predictions = features * self.weights;
-        end
-        
-        function predicted_labels = classify(self, features)
-            predictions = self.evaluate(features);
-            [~, predicted_labels] = max(predictions,[],2);
-            predicted_labels = predicted_labels - 1;
+            C1_features = features( labels == 0, : );
+            C2_features = features( labels == 1, : );
             
+            obj.total_mean = mean( features, 1)';
+            obj.C1_mean = mean(C1_features, 1)';
+            obj.C2_mean = mean(C2_features, 1)';
+            
+            C1_diff = bsxfun(@minus, C1_features, obj.C1_mean');
+            C2_diff = bsxfun(@minus, C2_features, obj.C2_mean');
+            obj.Sw = C1_diff' * C1_diff + C2_diff' * C2_diff;
+            obj.weights = (obj.Sw)\(obj.C2_mean - obj.C1_mean);
+            
+            % normalize the weights to unit length
+            obj.weights = obj.weights / norm( obj.weights );
         end
+        
+        function labels = classify(self, features)
+            labels = ( bsxfun(@minus, features, self.total_mean') * self.weights ) > 0; 
+        end
+ 
     end
     
 end
